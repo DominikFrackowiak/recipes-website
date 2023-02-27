@@ -3,33 +3,32 @@ import { createContext, useReducer, useEffect } from 'react'
 export const ThemeContext = createContext()
 
 const themeReducer = (state, action) => {
-	console.log(action)
-	console.log(state)
-	switch(action.type){
+	switch (action.type) {
 		case 'CHANGE_COLOR':
-			return {...state, color: action.payload}
+			return { ...state, color: action.payload }
+		case 'CHANGE_MODE':
+			return { ...state, mode: action.payload }
 		default:
-			 return state
+			return state
 	}
 }
 
 export function ThemeProvider({ children }) {
 	const [state, dispatch] = useReducer(themeReducer, {
-		color: 'pink',
+		color: '#58249c',
+		mode: 'dark'
 	})
 
 	const changeColor = color => {
 		dispatch({ type: 'CHANGE_COLOR', payload: color })
 	}
 
-	// changeColor('royalblue')
-
- // useEffect(()=>{
- //    console.log(state.color)
-	// }, [state])
+	const changeMode = (mode) => {
+		dispatch({ type: 'CHANGE_MODE', payload: mode })
+	}
 
 	return (
-		<ThemeContext.Provider value={{...state, changeColor}}>
+		<ThemeContext.Provider value={{ ...state, changeColor, changeMode }}>
 			{children}
 		</ThemeContext.Provider>
 	)
