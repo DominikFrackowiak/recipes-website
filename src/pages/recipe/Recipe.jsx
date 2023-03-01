@@ -1,5 +1,5 @@
 import './Recipe.css'
-import { useParams } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import { useTheme } from '../../hooks/useTheme'
 import { useEffect, useState } from 'react'
 import { projectFirestore } from '../../../firebase/config'
@@ -12,13 +12,14 @@ export default function Recipe() {
 	const [isPending, setIsPending] = useState(false)
 	const [error, setError] = useState(false)
 
+	const navigate = useNavigate()
+
 	useEffect(() => {
 		setIsPending(true)
-		projectFirestore
+		const unsub = projectFirestore
 			.collection('recipes')
 			.doc(id)
-			.get()
-			.then(doc => {
+			.onSnapshot(doc => {
 				if (doc.exists) {
 					setIsPending(false)
 					setRecipe(doc.data())
@@ -27,7 +28,17 @@ export default function Recipe() {
 					setError('Could not find that recipe')
 				}
 			})
+
+		return () => unsub()
 	}, [id])
+
+	const handleClick = () => {
+		projectFirestore
+			.collection('recipes')
+			.doc(id)
+			.update({ title: 'Something completely different' })
+		navigate('/')
+	}
 
 	return (
 		<div className={`recipe ${mode}`}>
@@ -38,11 +49,10 @@ export default function Recipe() {
 					<h2 className='page-title'>{recipe.title}</h2>
 					<p>Takes {recipe.cookingTime} to cook.</p>
 					<ul>
-						{recipe && recipe.ingredients.map(ing => (
-							<li key={ing}>{ing}</li>
-						))}
+						{recipe && recipe.ingredients.map(ing => <li key={ing}>{ing}</li>)}
 					</ul>
 					<p className='method'>{recipe.method}</p>
+					<button onClick={handleClick}>Update me</button>
 				</>
 			)}
 		</div>
